@@ -1,0 +1,16 @@
+{
+  "users" : [
+    {
+      "IP" : "127.0.0.1",
+      "nickname" : "Woenzu",
+      "accessrights" : 0,
+      "avatar" : "mmmm.jpg"
+    },
+    {
+      "IP" : "127.0.0.1",
+      "nickname" : "SomeNick",
+      "accessrights" : 0,
+      "avatar" : "morda.jpg"
+    }
+  ]
+}
