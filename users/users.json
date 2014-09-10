@@ -4,13 +4,15 @@
       "IP" : "127.0.0.1",
       "nickname" : "Woenzu",
       "accessrights" : 0,
-      "avatar" : "mmmm.jpg"
+      "avatar" : "mmmm.jpg",
+      "status" : "active"
     },
     {
       "IP" : "127.0.0.1",
       "nickname" : "SomeNick",
       "accessrights" : 0,
-      "avatar" : "morda.jpg"
+      "avatar" : "morda.jpg",
+      "status" : "banned"
     }
   ]
 }
