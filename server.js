@@ -33,32 +33,24 @@ function createClient( sock ) {
 
 function initialize() {
 
-  //TODO refactor duplicate code!!!
   //server config check
   var serverConfigPath = appDir + '/config.json';
-  var isExist = checkForFileExistence( serverConfigPath );
-
-  if(!isExist) {
-    fs.writeFileSync( serverConfigPath, '{"configuration":{}}\n' );
-  }
+  checkForFileExistence( serverConfigPath, '{"configuration":{}}\n' );
 
   //user database check
   var userdbPath = appDir + '/users/userdb.json';
-  isExist = checkForFileExistence( userdbPath );
-
-  if(!isExist) {
-    fs.writeFileSync( userdbPath, '{"users":[]}\n' );
-  }
+  var userdb = checkForFileExistence( userdbPath, '{"users":[]}\n' );
 }
 
-function checkForFileExistence( filename ) {
+
+function checkForFileExistence( filename, defaultContent) {
   try {
-    fs.readFileSync( filename );
+    return fs.readFileSync( filename );
     //console.log('[DEBUG]file exists...');
-    return true;
   } catch( e ) {
+    fs.writeFileSync( filename, defaultContent );
+    return fs.readFileSync( filename );
     //console.log( '[DEBUG]file does not exist' );
-    return false;
   }
 }
 
