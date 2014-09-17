@@ -4,19 +4,21 @@ var net = require( 'net' );
 var fs = require( 'fs' );
 
 var client = require( 'client' );
-
 var clients = [];
-var appDir = process.env.PWD;
+var appDir = process.cwd();
 
 initialize();
 
 var server = net.createServer( function( sock ) {
   createClient( sock );
-  //TODO need add clients in clients array
 });
 
 function createClient( sock ) {
+  sock.write( 'MOTD Placeholder... connected to server...\n', 'utf8' );
+
   var chatClient = new client.Client( sock );
+  clients.push( chatClient );
+
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
 
@@ -28,7 +30,6 @@ function createClient( sock ) {
     console.log( e );
   });
 
-  sock.write( 'MOTD Placeholder... connected to server...\n', 'utf8' );
 }
 
 function initialize() {
@@ -40,6 +41,7 @@ function initialize() {
   //user database check
   var userdbPath = appDir + '/users/userdb.json';
   var userdb = checkForFileExistence( userdbPath, '{"users":[]}\n' );
+  console.log( 'file: ', userdb.toString() );
 }
 
 
