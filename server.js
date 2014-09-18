@@ -6,15 +6,12 @@ var fs = require( 'fs' );
 var client = require( 'client' );
 var clients = [];
 var appDir = process.cwd();
+var serverConfig = {};
 
 initialize();
 
 var server = net.createServer( function( sock ) {
-  createClient( sock );
-});
-
-function createClient( sock ) {
-  sock.write( 'MOTD Placeholder... connected to server...\n', 'utf8' );
+  sock.write( serverConfig.configuration.MOTD, 'utf8' );
 
   var chatClient = new client.Client( sock );
   clients.push( chatClient );
@@ -23,25 +20,24 @@ function createClient( sock ) {
   sock.setTimeout( 0 );
 
   sock.on( 'data', function( data ) {
-    console.log( data );
+    console.log( '>> ' + data );
   });
 
   sock.on( 'error', function( e ) {
     console.log( e );
   });
-
-}
+});
 
 function initialize() {
 
   //server config check
   var serverConfigPath = appDir + '/config.json';
-  checkForFileExistence( serverConfigPath, '{"configuration":{}}\n' );
+  var configFile = checkForFileExistence( serverConfigPath, '{"configuration":{"MOTD":"Hello to trollbox server..."}}\n' );
+  serverConfig = JSON.parse( configFile );
 
   //user database check
-  var userdbPath = appDir + '/users/userdb.json';
-  var userdb = checkForFileExistence( userdbPath, '{"users":[]}\n' );
-  console.log( 'file: ', userdb.toString() );
+  var userDBPath = appDir + '/users/userDB.json';
+  var userDB = checkForFileExistence( userDBPath, '{"users":[]}\n' );
 }
 
 
