@@ -6,7 +6,9 @@ var fs = require( 'fs' );
 var client = require( 'client' );
 var clients = [];
 var appDir = process.cwd();
+
 var serverConfig = {};
+var userDB = {};
 
 initialize();
 
@@ -37,18 +39,17 @@ function initialize() {
 
   //user database check
   var userDBPath = appDir + '/users/userDB.json';
-  var userDB = checkForFileExistence( userDBPath, '{"users":[]}\n' );
+  var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' );
+  userDB = JSON.parse( userDBFile );
 }
 
 
 function checkForFileExistence( filename, defaultContent) {
   try {
     return fs.readFileSync( filename );
-    //console.log('[DEBUG]file exists...');
   } catch( e ) {
     fs.writeFileSync( filename, defaultContent );
     return fs.readFileSync( filename );
-    //console.log( '[DEBUG]file does not exist' );
   }
 }
 
