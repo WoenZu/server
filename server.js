@@ -1,5 +1,6 @@
 'use strict';
 
+var colors = require('colors');
 var net = require( 'net' );
 var fs = require( 'fs' );
 
@@ -13,7 +14,7 @@ var userDB = {};
 initialize();
 
 var server = net.createServer( function( sock ) {
-  sock.write( serverConfig.configuration.MOTD, 'utf8' );
+  sock.write( serverConfig.configuration.MOTD + '\n', 'utf8' );
 
   var chatClient = new client.Client( sock );
   clients.push( chatClient );
@@ -22,7 +23,8 @@ var server = net.createServer( function( sock ) {
   sock.setTimeout( 0 );
 
   sock.on( 'data', function( data ) {
-    console.log( '>> ' + data );
+    console.log( '<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data.white );
+    sock.write( 'wrong command\n', 'utf8' );
   });
 
   sock.on( 'error', function( e ) {
@@ -42,7 +44,6 @@ function initialize() {
   var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' );
   userDB = JSON.parse( userDBFile );
 }
-
 
 function checkForFileExistence( filename, defaultContent) {
   try {
