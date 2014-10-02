@@ -23,8 +23,10 @@ var server = net.createServer( function( sock ) {
   sock.setTimeout( 0 );
 
   sock.on( 'data', function( data ) {
-    console.log( '<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data.white );
-    sock.write( 'wrong command\n', 'utf8' );
+    console.log( '<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data.white ); // debug
+    //TODO here will be client incoming message handler
+
+    sock.write( 'wrong command\n', 'utf8' ); //debug
   });
 
   sock.on( 'error', function( e ) {
