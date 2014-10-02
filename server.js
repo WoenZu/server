@@ -3,8 +3,13 @@
 var colors = require('colors');
 var net = require( 'net' );
 var fs = require( 'fs' );
-
+var enc = require( 'encoder' );
+var mf = require( 'fabric');
 var client = require( 'client' );
+
+var fabric = new mf.MessageFabric();
+var encoder = new enc.Encoder( 'key' );
+
 var clients = [];
 var appDir = process.cwd();
 
@@ -24,7 +29,7 @@ var server = net.createServer( function( sock ) {
 
   sock.on( 'data', function( data ) {
     console.log( '<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data.white ); // debug
-    //TODO here will be client incoming message handler
+    onReceivingMessage( data );
 
     sock.write( 'wrong command\n', 'utf8' ); //debug
   });
@@ -33,6 +38,10 @@ var server = net.createServer( function( sock ) {
     console.log( e );
   });
 });
+
+function onReceivingMessage( msg ){
+  //TODO process incoming message
+}
 
 function initialize() {
 
