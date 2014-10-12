@@ -3,9 +3,9 @@
 var colors = require('colors');
 var net = require( 'net' );
 var fs = require( 'fs' );
-var enc = require( 'encoder' );
-var mf = require( 'fabric');
-var client = require( 'client' );
+var enc = require( 'tbox/encoder' );
+var mf = require( 'tbox/fabric');
+var client = require( 'tbox/client' );
 
 var fabric = new mf.MessageFabric();
 var encoder = new enc.Encoder( 'key' );
@@ -44,16 +44,18 @@ function onReceivingMessage( msg ){
 }
 
 function initialize() {
-
+  console.log( 'initializung...' );
   //server config check
   var serverConfigPath = appDir + '/config.json';
   var configFile = checkForFileExistence( serverConfigPath, '{"configuration":{"MOTD":"Hello to trollbox server..."}}\n' );
   serverConfig = JSON.parse( configFile );
+  console.log( 'config ok.' );
 
   //user database check
   var userDBPath = appDir + '/users/userDB.json';
   var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' );
   userDB = JSON.parse( userDBFile );
+  console.log( 'userDB ok.' );
 }
 
 function checkForFileExistence( filename, defaultContent) {
@@ -66,3 +68,4 @@ function checkForFileExistence( filename, defaultContent) {
 }
 
 server.listen( 6666 );
+console.log( 'server listening...' );
