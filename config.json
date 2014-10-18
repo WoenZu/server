@@ -1,1 +1,7 @@
-{"configuration":{"MOTD":"Hello to trollbox server..."}}
+{
+  "configuration" :
+    {
+      "MOTD" :
+          "Hello to trollbox server...\nэто приветственное сообщение\nдля работы сданым сервером необходим клиент поддерживающий соответствующий протокол"
+    }
+}
