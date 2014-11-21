@@ -15,7 +15,7 @@ var fabric = new mf.MessageFabric();
 var encoder = new enc.Encoder( 'key' );
 
 var clients = [];
-var appDir = process.cwd();
+var appDir = process.cwd(); //TODO need to make multiplatform
 
 var serverConfig = {};
 var userDB = {};
