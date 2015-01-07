@@ -4,15 +4,12 @@ var colors = require('colors');
 var net = require( 'net' );
 var fs = require( 'fs' );
 
-//TODO may be make all tBox modules in one require? var tbox = require( 'tbox' );
-//TODO encoder = new tbox.Encoder( 'key' );
+var tbox = require( 'tbox' );
 
-var enc = require( 'tbox/encoder' );
-var mf = require( 'tbox/fabric');
 var client = require( 'tbox/client' );
 
-var fabric = new mf.MessageFabric();
-var encoder = new enc.Encoder( 'key' );
+var fabric = new tbox.MessageFabric();
+var encoder = new tbox.Encoder( 'key' );
 
 var clients = [];
 var appDir = process.cwd(); //TODO need to make multiplatform
