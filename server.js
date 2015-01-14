@@ -3,10 +3,7 @@
 var colors = require('colors');
 var net = require( 'net' );
 var fs = require( 'fs' );
-
 var tbox = require( 'tbox' );
-
-var client = require( 'tbox/client' );
 
 var fabric = new tbox.MessageFabric();
 var encoder = new tbox.Encoder( 'key' );
@@ -22,14 +19,14 @@ initialize();
 var server = net.createServer( function( sock ) {
   sock.write( serverConfig.configuration.MOTD + '\n', 'utf8' ); //temp
 
-  var chatClient = new client.Client( sock );
+  var chatClient = new tbox.Client( sock );
   clients.push( chatClient );
 
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
 
   sock.on( 'data', function( data ) {
-    console.log( '<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data.white ); // debug
+    console.log( '<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white ); // debug
     onReceivingMessage( data );
   });
 
