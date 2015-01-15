@@ -7,6 +7,7 @@ var tbox = require( 'tbox' );
 
 var fabric = new tbox.MessageFabric();
 var encoder = new tbox.Encoder( 'key' );
+var config = new tbox.Config( console.log ); //TODO need notifier
 
 var clients = [];
 var appDir = process.cwd(); //TODO need to make multiplatform
@@ -42,27 +43,16 @@ function onReceivingMessage( msg ){
 }
 
 function initialize() {
-  console.log( 'initializung...' );
-  //server config check
-  var serverConfigPath = appDir + '/config.json';
-  var configFile = checkForFileExistence( serverConfigPath, '{"configuration":{"MOTD":"Hello to trollbox server..."}}\n' );
-  serverConfig = JSON.parse( configFile );
-  console.log( 'config ok.' );
+  console.log( 'initializing...' );
+
+  config.checkForFileExistence( appDir + '/config.json' );
+  serverConfig = config.getConfiguration();
 
   //user database check
-  var userDBPath = appDir + '/users/userDB.json';
-  var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' ); //TODO make admin user for default
-  userDB = JSON.parse( userDBFile );
-  console.log( 'userDB ok.' );
-}
-
-function checkForFileExistence( filename, defaultContent) {
-  try {
-    return fs.readFileSync( filename );
-  } catch( e ) {
-    fs.writeFileSync( filename, defaultContent );
-    return fs.readFileSync( filename );
-  }
+  //var userDBPath = appDir + '/users/userDB.json';
+  //var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' ); //TODO make admin user for default
+  //userDB = JSON.parse( userDBFile );
+  //console.log( 'userDB ok.' );
 }
 
 server.listen( 6666 );
