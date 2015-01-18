@@ -7,10 +7,15 @@ var tbox = require( 'tbox' );
 
 var fabric = new tbox.MessageFabric();
 var encoder = new tbox.Encoder( 'key' );
-var config = new tbox.Config( console.log ); //TODO need notifier
+var checkFile = tbox.utils.checkFile;
 
 var clients = [];
 var appDir = process.cwd(); //TODO need to make multiplatform
+
+//default configuration for server
+var defServerConfig = {};
+defServerConfig.motd = 'Hello Chat World';
+defServerConfig.test = 'test property';
 
 var serverConfig = {};
 var userDB = {};
@@ -45,14 +50,8 @@ function onReceivingMessage( msg ){
 function initialize() {
   console.log( 'initializing...' );
 
-  config.checkForFileExistence( appDir + '/config.json' );
-  serverConfig = config.getConfiguration();
-
-  //user database check
-  //var userDBPath = appDir + '/users/userDB.json';
-  //var userDBFile = checkForFileExistence( userDBPath, '{"users":[]}\n' ); //TODO make admin user for default
-  //userDB = JSON.parse( userDBFile );
-  //console.log( 'userDB ok.' );
+  serverConfig = checkFile( appDir + '/config.json', defServerConfig );
+  userDB = checkFile( appDir + '/users/userDB.json', '{"users":[]}' ); //TODO make admin user for default
 }
 
 server.listen( 6666 );
