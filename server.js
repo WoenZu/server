@@ -23,10 +23,12 @@ var userDB = {};
 initialize();
 
 var server = net.createServer( function( sock ) {
-  sock.write( serverConfig.configuration.MOTD + '\n', 'utf8' ); //temp
+  sock.write( serverConfig.motd + '\n', 'utf8' ); //temp
 
   var chatClient = new tbox.Client( sock );
   clients.push( chatClient );
+
+  console.log( clients );
 
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
@@ -41,7 +43,9 @@ var server = net.createServer( function( sock ) {
   });
 });
 
-function onReceivingMessage( msg ){
+function onReceivingMessage( data ){
+
+
   //TODO unwrap
   //TODO decode
   //TODO parse message to message object
