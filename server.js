@@ -16,6 +16,7 @@ var appDir = process.cwd(); //TODO need to make multiplatform
 var defServerConfig = {};
 defServerConfig.motd = 'Hello Chat World';
 defServerConfig.test = 'test property';
+defServerConfig.port = '6666';
 
 var serverConfig = {};
 var userDB = {};
@@ -26,9 +27,8 @@ var server = net.createServer( function( sock ) {
   sock.write( serverConfig.motd + '\n', 'utf8' ); //temp
 
   var chatClient = new tbox.Client( sock );
+  console.log( 'client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' connected to server');
   clients.push( chatClient );
-
-  console.log( clients );
 
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
@@ -52,11 +52,11 @@ function onReceivingMessage( data ){
 }
 
 function initialize() {
-  console.log( 'initializing...' );
+  console.log( '[DEBUG] initializing...' );
 
   serverConfig = checkFile( appDir + '/config.json', defServerConfig );
   userDB = checkFile( appDir + '/users/userDB.json', '{"users":[]}' ); //TODO make admin user for default
 }
 
 server.listen( 6666 );
-console.log( 'server listening...' );
+console.log( '[DEBUG] server listening...' );
