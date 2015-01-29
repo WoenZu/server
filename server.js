@@ -5,12 +5,15 @@ var net = require( 'net' );
 var fs = require( 'fs' );
 var tbox = require( 'tbox' );
 
-var fabric = new tbox.MessageFabric();
-var encoder = new tbox.Encoder( 'key' );
 var checkFile = tbox.utils.checkFile;
+var encoder = new tbox.Encoder( 'key' );
+var protocol = new tbox.Protocol();
+var userDB = new tbox.UserDB( tbox.utils.createPath( 'userDB.json' ) );
 
-var clients = [];
-var appDir = process.cwd(); //TODO need to make multiplatform
+var pool = new tbox.SocketPool();
+//var clients = [];
+
+var configPath = tbox.utils.createPath( 'config.json' );
 
 //default configuration for server
 var defServerConfig = {};
@@ -19,23 +22,34 @@ defServerConfig.test = 'test property';
 defServerConfig.port = '6666';
 
 var serverConfig = {};
-var userDB = {};
 
 initialize();
 
 var server = net.createServer( function( sock ) {
-  sock.write( serverConfig.motd + '\n', 'utf8' ); //temp
-
-  var chatClient = new tbox.Client( sock );
-  console.log( 'client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' connected to server');
-  clients.push( chatClient );
-
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
 
+  var chatClient = new tbox.Client( sock );
+
+  console.log( 'client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server');
+
+  pool.push( chatClient );
+  //clients.push( chatClient );//TODO надо ли делать отдельный контейнер или оставить просто массив?
+
+  sock.write( serverConfig.motd + '\n', 'utf8' ); //TODO temp
+
   sock.on( 'data', function( data ) {
     console.log( '<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white ); // debug
-    onReceivingMessage( data );
+    //TODO unwrap
+    //TODO decode
+    //TODO parse message to message object
+
+    var msgObj = {};
+    msgObj = protocol.parseString( data );
+
+    // msgObj = { command: REGISTER, parameters: [a, b, c] };
+
+    processMessage( msgObj );
   });
 
   sock.on( 'error', function( e ) {
@@ -43,19 +57,26 @@ var server = net.createServer( function( sock ) {
   });
 });
 
-function onReceivingMessage( data ){
-
-
-  //TODO unwrap
-  //TODO decode
-  //TODO parse message to message object
+function sendTo( recipient, str ) {
+  // sock.write( str, 'utf8' );
 }
 
 function initialize() {
   console.log( '[DEBUG] initializing...' );
+  serverConfig = checkFile( configPath, defServerConfig );
+}
 
-  serverConfig = checkFile( appDir + '/config.json', defServerConfig );
-  userDB = checkFile( appDir + '/users/userDB.json', '{"users":[]}' ); //TODO make admin user for default
+function processMessage( msg ) {
+  //TODO организовать проверку на соответствие принисаемого объекта сообщения
+  switch ( msg.command ) {
+    case 'REGISTER':
+      console.log('[DEBUG] done!');
+      break;
+    default:
+      //TODO обрабатываем как !неверная комманда протокола!
+
+  }
+
 }
 
 server.listen( 6666 );
