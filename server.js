@@ -5,10 +5,10 @@ var net = require( 'net' );
 var fs = require( 'fs' );
 var tbox = require( 'tbox' );
 
-var checkFile = tbox.utils.checkFile;
+var loadFile = tbox.utils.loadFile;
 var encoder = new tbox.Encoder( 'key' );
 var protocol = new tbox.Protocol();
-var userDB = new tbox.UserDB( tbox.utils.createPath( 'userDB.json' ) );
+var userDB = new tbox.UserDB();
 
 var pool = new tbox.SocketPool();
 //var clients = [];
@@ -40,14 +40,13 @@ var server = net.createServer( function( sock ) {
 
   sock.on( 'data', function( data ) {
     console.log( '<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white ); // debug
+
     //TODO unwrap
     //TODO decode
     //TODO parse message to message object
 
     var msgObj = {};
     msgObj = protocol.parseString( data );
-
-    // msgObj = { command: REGISTER, parameters: [a, b, c] };
 
     processMessage( msgObj );
   });
@@ -63,20 +62,30 @@ function sendTo( recipient, str ) {
 
 function initialize() {
   console.log( '[DEBUG] initializing...' );
-  serverConfig = checkFile( configPath, defServerConfig );
+  serverConfig = loadFile( configPath, defServerConfig );//TODO need refactoring (loadFile func and server conf load)
+
+  var userDBPath = tbox.utils.createPath( 'userDB.json' );
+  var def = userDB.createUser( 'admin', '127.0.0.1', 0);
+  userDB.loadDB( userDBPath, def );
 }
 
 function processMessage( msg ) {
-  //TODO организовать проверку на соответствие принисаемого объекта сообщения
+  //TODO организовать проверку на соответствие принимаемого объекта сообщения
   switch ( msg.command ) {
     case 'REGISTER':
-      console.log('[DEBUG] done!');
+      console.log('register command');
+
+        // распарсиваем параметры на ник и ip
+
+      if ( !userDB.checkDBForUser( nick, ip ) ) {
+        userDB.addUser( userDB.createUser( nick, ip ) );
+      } else {
+        sendTo( ip, 'IS_REGISTERED' ); //TODO надо использовать проткол для создания сообщения
+      }
       break;
     default:
       //TODO обрабатываем как !неверная комманда протокола!
-
   }
-
 }
 
 server.listen( 6666 );
