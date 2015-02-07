@@ -6,14 +6,15 @@ var fs = require( 'fs' );
 var tbox = require( 'tbox' );
 
 var loadFile = tbox.utils.loadFile;
+var createPath = tbox.utils.createPath;
 var encoder = new tbox.Encoder( 'key' );
 var protocol = new tbox.Protocol();
-var userDB = new tbox.UserDB();
+var userDB = new tbox.UserDB( createPath( 'userDB.json' ) );
 
 var pool = new tbox.SocketPool();
 //var clients = [];
 
-var configPath = tbox.utils.createPath( 'config.json' );
+var configPath = createPath( 'config.json' );
 
 //default configuration for server
 var defServerConfig = {};
@@ -64,29 +65,26 @@ function initialize() {
   console.log( '[DEBUG] initializing...' );
   serverConfig = loadFile( configPath, defServerConfig );//TODO need refactoring (loadFile func and server conf load)
 
-  var userDBPath = tbox.utils.createPath( 'userDB.json' );
-  var def = userDB.createUser( 'admin', '127.0.0.1', 0);
-  userDB.loadDB( userDBPath, def );
+  userDB.loadDB( userDB.getDBPath(), userDB.createDefaultDB() );//TODO need refactoring
 }
 
 function processMessage( msg ) {
-  //TODO организовать проверку на соответствие принимаемого объекта сообщения
-  switch ( msg.command ) {
+  switch ( msg.cmd ) {
     case 'REGISTER':
-      console.log('register command');
-
-        // распарсиваем параметры на ник и ip
-
-      if ( !userDB.checkDBForUser( nick, ip ) ) {
-        userDB.addUser( userDB.createUser( nick, ip ) );
+      console.log( 'process message REGISTER...' );
+      if ( !userDB.checkDBForUser( msg.prm[0], msg.prm[1] ) ) {
+        console.log( 'user not available in DB...' );
+        userDB.addUser( userDB.createUser( msg.prm[0], msg.prm[1] ) );
       } else {
-        sendTo( ip, 'IS_REGISTERED' ); //TODO надо использовать проткол для создания сообщения
+        sendTo( ip, protocol.registered() );
       }
       break;
+    case 'ERROR':
+      console.log( '[ERROR] %s', msg.prm );
     default:
       //TODO обрабатываем как !неверная комманда протокола!
   }
 }
 
 server.listen( 6666 );
-console.log( '[DEBUG] server listening...' );
+console.log( '[DEBUG] server listening...');
