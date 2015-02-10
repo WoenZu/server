@@ -57,26 +57,36 @@ var server = net.createServer( function( sock ) {
   });
 });
 
-function sendTo( recipient, str ) {
-  // sock.write( str, 'utf8' );
+function sendTo( id, str ) {
+  // id example {ip: '127.0.0.1:6666', nick: 'woenzu'}
+
+  var client = pool.getClientById( id );
+  try {
+    var sock = client.getSocket();
+    sock.write( str, 'utf8' );
+  } catch ( err ) {
+    console.log( err );
+    console.log('[ERROR] Client is not found.');
+  }
 }
 
 function initialize() {
-  console.log( '[DEBUG] initializing...' );
+  console.log( '[DEBUG] Initializing...' );
   serverConfig = loadFile( configPath, defServerConfig );//TODO need refactoring (loadFile func and server conf load)
 
-  userDB.loadDB( userDB.getDBPath(), userDB.createDefaultDB() );//TODO need refactoring
+  userDB.loadDB();
 }
 
 function processMessage( msg ) {
   switch ( msg.cmd ) {
     case 'REGISTER':
-      console.log( 'process message REGISTER...' );
-      if ( !userDB.checkDBForUser( msg.prm[0], msg.prm[1] ) ) {
-        console.log( 'user not available in DB...' );
-        userDB.addUser( userDB.createUser( msg.prm[0], msg.prm[1] ) );
+      console.log( 'Process message REGISTER...' );
+      if ( !userDB.checkDBForUser( msg.id.ip, msg.id.nick ) ) {
+        console.log( 'User not available in DB...' );
+        userDB.addUser( userDB.createUser( msg.id.ip, msg.id.nick ) );
+        sendTo( msg.id, protocol.registered( 'Hello, you are registered on server, please wait activation.' ) );
       } else {
-        sendTo( ip, protocol.registered() );
+        sendTo( msg.id, protocol.registered( 'Welcome to trollbox chat!' ) );
       }
       break;
     case 'ERROR':
@@ -87,4 +97,4 @@ function processMessage( msg ) {
 }
 
 server.listen( 6666 );
-console.log( '[DEBUG] server listening...');
+console.log( '[DEBUG] server listening...' );
