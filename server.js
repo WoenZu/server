@@ -10,9 +10,9 @@ var createPath = tbox.tutils.createPath;
 var encoder = new tbox.Encoder( 'key' );
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB( createPath( 'userDB.json' ) );
+var userInfo = new tbox.UserInfo();
 
 var pool = new tbox.ClientPool();
-//var clients = [];
 
 var configPath = createPath( 'config.json' );
 
@@ -28,13 +28,14 @@ var serverConfig = {};
 initialize();
 
 var server = net.createServer( function( sock ) {
+  
   sock.setEncoding( 'utf8' );
   sock.setTimeout( 0 );
 
   var chatClient = new tbox.Client( sock );
   pool.addClient( chatClient );
-
   console.log( 'client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server' );
+
 
   sock.write( serverConfig.MOTD + '\n', 'utf8' ); //TODO temp
 
@@ -45,15 +46,12 @@ var server = net.createServer( function( sock ) {
     //TODO decode
     //TODO parse message to message object
 
-    var msgObj = {};
-    msgObj = protocol.parseString( data );
-
+    var msgObj = protocol.parseString( data );
     processMessage( msgObj );
   });
 
   sock.on( 'close', function() {
     console.log( '<' + chatClient.getIP().white + ':' + chatClient.getPort() + '> is disconnected from server' );
-    //TODO remove this socket from pool
     pool.removeClient( chatClient );
   });
 
@@ -103,9 +101,14 @@ function sendTo( ident, str ) {
     sock.write( str, 'utf8' );
   } catch ( err ) {
     console.log( err );
-    console.log( '[ERROR] Client is not found.' );
+    console.log( '[ERROR] can\'t send message: Client is not found.' );
   }
 }
 
-server.listen( 6666 );
-console.log( '[DEBUG] server listening...' );
+server.listen({
+  host: 'localhost',
+  port: 6666
+}, function() {
+  console.log( '[DEBUG] Starting server listening at:', userInfo.getIP() + ':' + serverConfig.Port );
+});
+
