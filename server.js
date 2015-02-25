@@ -37,7 +37,7 @@ var server = net.createServer(function(sock) {
   console.log('client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server');
 
 
-  sock.write(serverConfig.MOTD + '\n', 'utf8'); //TODO temp
+  sock.write(protocol.motd(serverConfig.MOTD) + '\n', 'utf8'); //TODO temp
 
   sock.on('data', function(data) {
     console.log('<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white); // debug
@@ -96,6 +96,7 @@ function processMessage(msg) {
 
 function sendTo(ident, str) {
   var client = pool.getClientById(ident);
+
   try {
     var sock = client.getSocket();
     sock.write(str, 'utf8');
