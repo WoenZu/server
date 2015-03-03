@@ -121,6 +121,6 @@ function sendToAll(str) {
 server.listen({
   host: 'localhost',
   port: 6666
-}, function() {
-  console.log('[DEBUG] Starting server listening at:', userInfo.getIP() + ':' + serverConfig.Port);
+  }, function() {
+    console.log('[DEBUG] Starting server listening at: %s:%s', userInfo.getIP(), serverConfig.Port);
 });
