@@ -4,6 +4,7 @@ var colors = require('colors');
 var net = require('net');
 var fs = require('fs');
 var tbox = require('tbox');
+var ip = require('ip');
 
 var loadFile = tbox.tutils.loadFile;
 var createPath = tbox.tutils.createPath;
@@ -11,7 +12,6 @@ var splitIdent = tbox.tutils.splitIdent;
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
-var userInfo = new tbox.UserInfo();
 
 var pool = new tbox.ClientPool();
 
@@ -122,5 +122,5 @@ server.listen({
   host: 'localhost',
   port: 6666
   }, function() {
-    console.log('[DEBUG] Starting server listening at: %s:%s', userInfo.getIP(), serverConfig.Port);
+    console.log('[DEBUG] Starting server listening at: %s:%s', ip.address(), serverConfig.Port);
 });
