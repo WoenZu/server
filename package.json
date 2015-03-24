@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "version": "0.0.0-alpha",
+  "description": "chat server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WoenZu/server.git"
+  },
+  "author": "WoenZu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WoenZu/server/issues"
+  },
+  "homepage": "https://github.com/WoenZu/server",
+  "dependencies": {
+    "ip": "^0.3.2",
+    "tbox": "0.0.0-alpha"
+  },
+  "devDependencies": {
+    "colors": "^1.0.3"
+  }
+}
