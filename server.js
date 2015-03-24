@@ -12,7 +12,6 @@ var splitIdent = tbox.tutils.splitIdent;
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
-
 var pool = new tbox.ClientPool();
 
 var configPath = createPath('config.json');
