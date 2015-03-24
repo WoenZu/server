@@ -12,7 +12,8 @@ You can install `server` using:
 
 `git clone https://github.com/WoenZu/server.git`
 
-##Example
+##Using
+Here is client example:
 
     'use strict';
 
