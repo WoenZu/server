@@ -20,7 +20,6 @@ Here is client example:
     var tbox = require('tbox');
     var net = require('net');
     var protocol = new tbox.Protocol();
-    var userinfo = new tbox.UserInfo();
 
     var sock = {};
     var ident = '';
