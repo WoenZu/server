@@ -30,7 +30,7 @@ initialize();
 var server = net.createServer(function(sock) {
   var chatClient = new tbox.Client(sock);
   pool.addClient(chatClient);
-  console.log('client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server');
+  console.log('client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server'); //TODO make this output after receiving acc name of client
 
   sock.setEncoding('utf8');
   sock.setTimeout(0);
@@ -65,9 +65,9 @@ function initialize() {
 
 function processMessage(msg) {
   var command = msg.cmd;
-  var ident = msg.ident;
+  var id = msg.ident;
   var prm = msg.prm;
-  var spl = splitIdent(ident);
+  var spl = splitIdent(id);
   var ip = spl[0];
   var port = spl[1];
 
@@ -76,14 +76,14 @@ function processMessage(msg) {
       if (!userDB.checkForUser(ip, prm[0])) {
         console.log('User not available in DB...');
         userDB.addUser(userDB.createUser(ip, prm[0]));
-        sendTo(ident, protocol.registered('Hello, you are registered on server, please wait activation.'));
+        sendTo(id, protocol.registered('Hello, you are registered on server, please wait activation.'));
       } else {
-        sendTo(ident, protocol.registered('Welcome to trollbox chat!'));
+        sendTo(id, protocol.registered('Welcome to trollbox chat!'));
       }
       break;
     case 'TEXT':
       if (prm[0] !== '*') {
-        sendTo(prm[0], protocol.text(ident, '', prm[1]));
+        sendTo(prm[0], protocol.text(id, '', prm[1]));
       } else {
         sendToAll(protocol.text('', '', prm[1]));
       }
@@ -95,15 +95,16 @@ function processMessage(msg) {
   }
 }
 
-function sendTo(ident, str) {
-  var client = pool.getClientById(ident);
+function sendTo(id, str) {
+  var client = pool.getClientById(id);
 
-  //console.log('ident: ', ident);
+  //console.log('id: ', id);
   //console.log('client: ', client);
   //console.log(client.getSocket());
   try {
     var sock = client.getSocket();
     sock.write(str, 'utf8');
+    console.log('[DEBUG] string to send: ', str);
   } catch (err) {
     console.log(err);
     console.log('[ERROR] Cannot send message: Client is not found.');

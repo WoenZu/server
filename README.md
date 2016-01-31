@@ -23,13 +23,13 @@ Here is client example:
     var userinfo = new tbox.UserInfo();
 
     var sock = {};
-    var ident = '';
+    var id = '';
 
     function connect(ip, port) {
         sock = net.createConnection({host: ip, port: port}, function() {
             console.log('Connected at ' + sock.remoteAddress + ':' + sock.remotePort);
-            ident = createIdent();
-            sendTo(protocol.register(ident, 'YourNickHere'));
+            id = createId();
+            sendTo(protocol.register(id, 'YourNickHere'));
 
             sock.setEncoding('utf8');
 
@@ -47,8 +47,8 @@ Here is client example:
         });
     }
 
-    function createIdent() {
-        return ident = sock.address().address +':' + sock.address().port;
+    function createId() {
+        return id = sock.address().address +':' + sock.address().port;
     }
 
     function sendTo(str) {
