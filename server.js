@@ -8,7 +8,6 @@ var ip = require('ip');
 
 var loadFile = tbox.tutils.loadFile;
 var createPath = tbox.tutils.createPath;
-var splitIdent = tbox.tutils.splitIdent;
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
@@ -44,6 +43,9 @@ var server = net.createServer(function(sock) {
     //TODO parse message to message object
 
     var msgObj = protocol.parseString(data);
+
+    //register function
+
     processMessage(msgObj);
   });
 
@@ -65,20 +67,19 @@ function initialize() {
 
 function processMessage(msg) {
   var command = msg.cmd;
-  var id = msg.ident;
+  var id = msg.id;
   var prm = msg.prm;
-  var spl = splitIdent(id);
-  var ip = spl[0];
-  var port = spl[1];
 
   switch (command) {
     case 'REGISTER':
-      if (!userDB.checkForUser(ip, prm[0])) {
-        console.log('User not available in DB...');
-        userDB.addUser(userDB.createUser(ip, prm[0]));
-        sendTo(id, protocol.registered('Hello, you are registered on server, please wait activation.'));
+      var nick = prm[0];
+
+      if (!userDB.checkForUser(id)) {
+        console.log('User : ' + id.white + ' not available in DB...');
+        userDB.addUser(userDB.createUser(id));
+        sendTo(id, protocol.registered('Hello ' + nick.white + '! You are registered on server, please wait activation. =)'));
       } else {
-        sendTo(id, protocol.registered('Welcome to trollbox chat!'));
+        sendTo(id, protocol.registered(nick + ' welcome to trollbox chat!'));
       }
       break;
     case 'TEXT':
