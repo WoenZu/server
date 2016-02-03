@@ -27,26 +27,34 @@ var serverConfig = {};
 initialize();
 
 var server = net.createServer(function(sock) {
-  var chatClient = new tbox.Client(sock);
-  pool.addClient(chatClient);
-  console.log('client ' + chatClient.getIP().white + ':' + chatClient.getPort() + ' is connected to server'); //TODO make this output after receiving acc name of client
-
+  var chatClient = {};
+  sock.write(protocol.motd(serverConfig.MOTD) + '\n', 'utf8'); //TODO temp
   sock.setEncoding('utf8');
   sock.setTimeout(0);
-  sock.write(protocol.motd(serverConfig.MOTD) + '\n', 'utf8'); //TODO temp
-
   sock.on('data', function(data) {
+    var msgObj = processMessage(data);
+
     console.log('<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white); // debug
 
-    //TODO unwrap
-    //TODO decode
-    //TODO parse message to message object
+    var user = {};
+    if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
+      chatClient = new tbox.Client(sock);
 
-    var msgObj = protocol.parseString(data);
+      if(userDB.checkForUser(msgObj.id)) { //если пользователь есть в базе
+        user = userDB.getUser(msgObj.id); // получаем пользователя из базы
+        chatClient.importUserFromDB(user); // импортируем данные пользователя из базы в клиент сервера
+        pool.addClient(chatClient);
+      } else { // если юзера нет в базе
+        console.log('User : ' + msgObj.id.white + ' is not available in DB...');
+        user = userDB.createUser(msgObj.id, msgObj.prm[0]);
+        userDB.addUser(user); // добавляем пользователя в базу
+        chatClient.importUserFormDB(user);
+        pool.addClient(chatClient);
+      }
+      console.log('client ' + chatClient.getId().white + ' as ' + chatClient.getNick().red + ' is connected to server');
+    }
 
-    //register function
-
-    processMessage(msgObj);
+    processMsgString(msgObj);
   });
 
   sock.on('close', function() {
@@ -65,7 +73,14 @@ function initialize() {
   userDB.loadDB();
 }
 
-function processMessage(msg) {
+function processMessage(data) {
+  //TODO unwrap
+  //TODO decode
+  //TODO parse message to message object
+  return protocol.parseString(data);
+}
+
+function processMsgString(msg) {
   var command = msg.cmd;
   var id = msg.id;
   var prm = msg.prm;
@@ -74,16 +89,16 @@ function processMessage(msg) {
     case 'REGISTER':
       var nick = prm[0];
 
-      if (!userDB.checkForUser(id)) {
-        console.log('User : ' + id.white + ' not available in DB...');
-        userDB.addUser(userDB.createUser(id));
+      if(!userDB.checkForUser(id)) {
+
+
         sendTo(id, protocol.registered('Hello ' + nick.white + '! You are registered on server, please wait activation. =)'));
       } else {
         sendTo(id, protocol.registered(nick + ' welcome to trollbox chat!'));
       }
       break;
     case 'TEXT':
-      if (prm[0] !== '*') {
+      if(prm[0] !== '*') {
         sendTo(prm[0], protocol.text(id, '', prm[1]));
       } else {
         sendToAll(protocol.text('', '', prm[1]));
@@ -98,10 +113,10 @@ function processMessage(msg) {
 
 function sendTo(id, str) {
   var client = pool.getClientById(id);
-
-  //console.log('id: ', id);
-  //console.log('client: ', client);
   //console.log(client.getSocket());
+
+  console.log('client id: ', client.getId());
+
   try {
     var sock = client.getSocket();
     sock.write(str, 'utf8');
