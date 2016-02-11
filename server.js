@@ -40,13 +40,14 @@ var server = net.createServer(function(sock) {
     if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
       if(userDB.checkForUser(msgObj.id)) { //если пользователь есть в базе
         userObj = userDB.getUser(msgObj.id);// получаем пользователя из базы
-        chatClient.importUserFormDB(userObj); // импортируем данные пользователя из базы в клиент сервера
+        chatClient.importUserFromDB(userObj); // импортируем данные пользователя из базы в клиент сервера
         pool.addClient(chatClient);
       } else { // если юзера нет в базе
         console.log('User : ' + msgObj.id.white + ' is not available in DB...');
         userObj = userDB.createUser(msgObj.id, msgObj.prm[0]);
         userDB.addUser(userObj); // добавляем пользователя в базу
-        chatClient.importUserFormDB(userObj);
+        userDB.saveDB();
+        chatClient.importUserFromDB(userObj);
         pool.addClient(chatClient);
       }
       console.log('client ' + chatClient.getId().white + ' as ' + chatClient.getNick().red + ' is connected to server');
@@ -78,7 +79,6 @@ function initialize() {
 function processMessage(data) {
   //TODO unwrap
   //TODO decode
-  //TODO parse message to message object
   return protocol.parseString(data);
 }
 
