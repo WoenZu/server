@@ -6,29 +6,18 @@ var fs = require('fs');
 var tbox = require('tbox');
 var ip = require('ip');
 
-var loadFile = tbox.tutils.loadFile;
 var createPath = tbox.tutils.createPath;
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
+var serverConfig = new tbox.Config(createPath('config.json'));
 var pool = new tbox.ClientPool();
-
-var configPath = createPath('config.json');
-
-//default configuration for server
-var defServerConfig = {};
-defServerConfig.Users = [];
-defServerConfig.MOTD = 'Hello Chat World';
-defServerConfig.Test = 'test property';
-defServerConfig.Port = '6666';
-
-var serverConfig = {};
 
 initialize();
 
 var server = net.createServer(function(sock) {
   var chatClient = new tbox.Client(sock);
-  sock.write(protocol.motd(serverConfig.MOTD) + '\n', 'utf8'); //TODO temp
+  sock.write(protocol.motd(serverConfig.getProperty('MOTD'), 'utf8')); //TODO temp
   sock.setEncoding('utf8');
   sock.setTimeout(0);
   sock.on('data', function(data) {
@@ -72,7 +61,7 @@ var server = net.createServer(function(sock) {
 
 function initialize() {
   console.log('[server] Initializing...');
-  serverConfig = loadFile(configPath, defServerConfig);//TODO need refactoring (loadFile func and server conf load)
+  serverConfig.load();
   userDB.loadDB();
 }
 
@@ -117,7 +106,7 @@ function sendTo(userId, str) {
     sock.write(str, 'utf8');
     console.log('[server] string to send: ', str);
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
     console.log('[server] Cannot send message: Client is not found.');
   }
 }
@@ -133,5 +122,5 @@ server.listen({
   host: 'localhost',
   port: 6666
   }, function() {
-    console.log('[server] Starting server listening at: %s:%s', ip.address(), serverConfig.Port);
+    console.log('[server] Starting server listening at: %s:%s', ip.address(), serverConfig.getProperty('Port'));
 });
