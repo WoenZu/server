@@ -17,7 +17,7 @@ initialize();
 
 var server = net.createServer(function(sock) {
   var chatClient = new tbox.Client(sock);
-  sock.write(protocol.motd(serverConfig.getProperty('MOTD'), 'utf8')); //TODO temp
+  sock.write(protocol.motd(serverConfig.getProperty('MOTD')), 'utf8'); //TODO temp
   sock.setEncoding('utf8');
   sock.setTimeout(0);
   sock.on('data', function(data) {
@@ -27,9 +27,12 @@ var server = net.createServer(function(sock) {
 
     var userObj = {};
     if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
+
+      //TODO проверить зарегистрирован ли уже пользователь с таким id  в pool и если да то...
       if(userDB.checkForUser(msgObj.id)) { //если пользователь есть в базе
         userObj = userDB.getUser(msgObj.id);// получаем пользователя из базы
         chatClient.importUserFromDB(userObj); // импортируем данные пользователя из базы в клиент сервера
+        chatClient.register();
         pool.addClient(chatClient);
       } else { // если юзера нет в базе
         console.log('User : ' + msgObj.id.white + ' is not available in DB...');
@@ -37,12 +40,19 @@ var server = net.createServer(function(sock) {
         userDB.addUser(userObj); // добавляем пользователя в базу
         userDB.saveDB();
         chatClient.importUserFromDB(userObj);
+        chatClient.register();
         pool.addClient(chatClient);
       }
       console.log('client ' + chatClient.getId().white + ' as ' + chatClient.getNick().red + ' is connected to server');
     }
 
-    processMsgString(msgObj);
+    //check client for registration on server
+    if(chatClient.isRegistered()) {
+      processMsgString(msgObj);
+    } else {
+      sock.write(protocol.error('Client id: ' + msgObj.id + ' is not registered on server'), 'utf8');
+    }
+
   });
 
   sock.on('close', function() {
