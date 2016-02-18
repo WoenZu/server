@@ -19,7 +19,7 @@
   "homepage": "https://github.com/WoenZu/server",
   "dependencies": {
     "ip": "^0.3.2",
-    "tbox": "0.0.0-alpha"
+    "tbox": "0.1.0"
   },
   "devDependencies": {
     "colors": "^1.0.3"
