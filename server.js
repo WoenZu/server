@@ -1,29 +1,30 @@
 'use strict';
 
-var colors = require('colors');
+//var colors = require('colors');
 var net = require('net');
 var fs = require('fs');
 var tbox = require('tbox');
 var ip = require('ip');
-var createPath = require('tbox/utils/create_path').createPath;
+var createPath = tbox.createPath;
 
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
 var serverConfig = new tbox.Config(createPath('config.json'));
 var pool = new tbox.ClientPool();
+var config = {};
 
 initialize();
 
 var server = net.createServer(function(sock) {
   var chatClient = new tbox.Client(sock);
-  sock.write(protocol.motd(serverConfig.getProperty('MOTD')), 'utf8'); //TODO temp
+  sock.write(protocol.motd(config.MOTD, 'utf8')); //TODO temp
   sock.setEncoding('utf8');
   sock.setTimeout(0);
   sock.on('data', function(data) {
     var msgObj = processReceivedData(data); // msgObj - command in JSON {cmd:'EXAMPLE', prm:'parameter'}
 
-    console.log('<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white); // debug
+    console.log('<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data); // debug
 
     var userObj = {};
     if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
@@ -43,7 +44,7 @@ var server = net.createServer(function(sock) {
         chatClient.register();                //TODO repeating code
         pool.addClient(chatClient);           //TODO
       }
-      console.log('client ' + chatClient.getId().white + ' as ' + chatClient.getNick().red + ' is connected to server');
+      console.log('client ' + chatClient.getId() + ' as ' + chatClient.getNick() + ' is connected to server');
     }
 
     //check client for registration on server
@@ -58,7 +59,7 @@ var server = net.createServer(function(sock) {
 
   sock.on('close', function() {
     if(pool.checkForClient(chatClient)) {
-      console.log('<' + chatClient.getIP().white + ':' + chatClient.getPort() + '> is disconnected from server');
+      console.log('<' + chatClient.getIP() + ':' + chatClient.getPort() + '> is disconnected from server');
       pool.removeClient(chatClient);
     } else {
       console.log('[server] Anonymous connection closed...');// not need to show
@@ -73,6 +74,7 @@ var server = net.createServer(function(sock) {
 function initialize() {
   console.log('[server] Initializing...');
   serverConfig.load();
+  config = serverConfig.getConfig();
   userDB.loadDB();
 }
 
@@ -91,7 +93,7 @@ function processCommand(msg) {
     case 'REGISTER': //TODO провека на состояние клиента pending, active or banned, make greeting of client to all users
       var nick = prm[0];
       if(!userDB.checkForUser(id)) {
-        sendTo(id, protocol.registered('Hello ' + nick.white + '! You are registered on server, please wait activation. =)'));
+        sendTo(id, protocol.registered('Hello ' + nick + '! You are registered on server, please wait activation. =)'));
       } else {
         sendTo(id, protocol.registered(nick + ' welcome to trollbox chat!'));
       }
@@ -131,7 +133,7 @@ function sendToAll(str) {
 
 server.listen({
   host: 'localhost',
-  port: 6666
+  port: config.Port
   }, function() {
     console.log('[server] Starting server listening at: %s:%s', ip.address(), serverConfig.getProperty('Port'));
 });
