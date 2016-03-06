@@ -58,7 +58,6 @@ Here is client example:
 
 ##Dependencies
 * tbox
-* colors (dev)
 * ip
 
 ##License
