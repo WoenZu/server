@@ -5,8 +5,8 @@ var net = require('net');
 var fs = require('fs');
 var tbox = require('tbox');
 var ip = require('ip');
+var createPath = require('tbox/utils/create_path').createPath;
 
-var createPath = tbox.tutils.createPath;
 var encoder = new tbox.Encoder('key');
 var protocol = new tbox.Protocol();
 var userDB = new tbox.UserDB(createPath('userDB.json'));
@@ -21,14 +21,14 @@ var server = net.createServer(function(sock) {
   sock.setEncoding('utf8');
   sock.setTimeout(0);
   sock.on('data', function(data) {
-    var msgObj = processMessage(data);
+    var msgObj = processReceivedData(data); // msgObj - command in JSON {cmd:'EXAMPLE', prm:'parameter'}
 
     console.log('<' + sock.remoteAddress.white + ':' + sock.remotePort + '> ' + data.white); // debug
 
     var userObj = {};
     if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
 
-      //TODO проверить зарегистрирован ли уже пользователь с таким id  в pool и если да то...
+      //TODO проверить зарегистрирован ли уже пользователь с таким id  в pool и если да то не позволять подсоедениться
       if(userDB.checkForUser(msgObj.id)) { //если пользователь есть в базе
         userObj = userDB.getUser(msgObj.id);// получаем пользователя из базы
         chatClient.importUserFromDB(userObj); // импортируем данные пользователя из базы в клиент сервера
@@ -39,17 +39,18 @@ var server = net.createServer(function(sock) {
         userObj = userDB.createUser(msgObj.id, msgObj.prm[0]);
         userDB.addUser(userObj); // добавляем пользователя в базу
         userDB.saveDB();
-        chatClient.importUserFromDB(userObj);
-        chatClient.register();
-        pool.addClient(chatClient);
+        chatClient.importUserFromDB(userObj); //TODO
+        chatClient.register();                //TODO repeating code
+        pool.addClient(chatClient);           //TODO
       }
       console.log('client ' + chatClient.getId().white + ' as ' + chatClient.getNick().red + ' is connected to server');
     }
 
     //check client for registration on server
     if(chatClient.isRegistered()) {
-      processMsgString(msgObj);
+      processCommand(msgObj);
     } else {
+    //TODO добавить шифрование и т.п.
       sock.write(protocol.error('Client id: ' + msgObj.id + ' is not registered on server'), 'utf8');
     }
 
@@ -75,19 +76,19 @@ function initialize() {
   userDB.loadDB();
 }
 
-function processMessage(data) {
+function processReceivedData(data) {
   //TODO unwrap
   //TODO decode
   return protocol.parseString(data);
 }
 
-function processMsgString(msg) {
+function processCommand(msg) {
   var command = msg.cmd;
   var id = msg.id;
   var prm = msg.prm;
 
   switch (command) {
-    case 'REGISTER': //TODO провека на состояние клиента pending, active or banned
+    case 'REGISTER': //TODO провека на состояние клиента pending, active or banned, make greeting of client to all users
       var nick = prm[0];
       if(!userDB.checkForUser(id)) {
         sendTo(id, protocol.registered('Hello ' + nick.white + '! You are registered on server, please wait activation. =)'));
