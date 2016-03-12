@@ -22,29 +22,34 @@ var server = net.createServer(function(sock) {
   sock.setEncoding('utf8');
   sock.setTimeout(0);
   sock.on('data', function(data) {
-    var msgObj = processReceivedData(data); // msgObj - command in JSON {cmd:'EXAMPLE', prm:'parameter'}
+    var msgObj = processReceivedData(data); // msgObj - command in JSON {cmd:'REGISTER', id:'some_id', prm:'parameter'}
+    var cmd = msgObj.cmd;
+    var id = msgObj.id;
+    var nick = msgObj.prm[0];
+    var userObj = {};
 
     console.log('<' + sock.remoteAddress + ':' + sock.remotePort + '> ' + data); // debug
 
-    var userObj = {};
-    if(msgObj.cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
+    if(cmd === 'REGISTER') { //TODO проверять на целостность и валидность сообщения с данной коммандой
 
-      //TODO проверить зарегистрирован ли уже пользователь с таким id  в pool и если да то не позволять подсоедениться
-      if(userDB.checkForUser(msgObj.id)) { //если пользователь есть в базе
-        userObj = userDB.getUser(msgObj.id);// получаем пользователя из базы
-        chatClient.importUserFromDB(userObj); // импортируем данные пользователя из базы в клиент сервера
-        chatClient.register();
-        pool.addClient(chatClient);
-      } else { // если юзера нет в базе
-        console.log('User : ' + msgObj.id.white + ' is not available in DB...');
-        userObj = userDB.createUser(msgObj.id, msgObj.prm[0]);
-        userDB.addUser(userObj); // добавляем пользователя в базу
-        userDB.saveDB();
-        chatClient.importUserFromDB(userObj); //TODO
-        chatClient.register();                //TODO repeating code
-        pool.addClient(chatClient);           //TODO
+      // проверяем, подключен ли уже пользователь с таким id
+      if (!pool.checkClientById(id)) {
+        if (userDB.checkForUser(id)) {
+          userObj = userDB.getUser(id);
+          registerClient(chatClient, userObj);
+        } else { // если юзера нет в базе
+          console.log('User : ' + id + ' is not available in DB...');
+          userObj = userDB.createUser(id, nick);
+          userDB.addUser(userObj);
+          userDB.saveDB();
+          registerClient(chatClient, userObj);
+        }
+        console.log('client ' + chatClient.getId() + ' as ' + chatClient.getNick() + ' is connected to server');
+      } else {
+        //TODO добавить шифрование и т.п.
+        sock.write(protocol.error('Client id: ' + msgObj.id + ' is alredy connected to server'), 'utf8');
+        //TODO логирование если подключается кто-то под чужим id
       }
-      console.log('client ' + chatClient.getId() + ' as ' + chatClient.getNick() + ' is connected to server');
     }
 
     //check client for registration on server
@@ -58,7 +63,7 @@ var server = net.createServer(function(sock) {
   });
 
   sock.on('close', function() {
-    if(pool.checkForClient(chatClient)) {
+    if(pool.checkClient(chatClient)) {
       console.log('<' + chatClient.getIP() + ':' + chatClient.getPort() + '> is disconnected from server');
       pool.removeClient(chatClient);
     } else {
@@ -76,6 +81,12 @@ function initialize() {
   serverConfig.load();
   config = serverConfig.getConfig();
   userDB.loadDB();
+}
+
+function registerClient(chatClient, userObj) {
+  chatClient.importUserFromDB(userObj);
+  chatClient.register();
+  pool.addClient(chatClient);
 }
 
 function processReceivedData(data) {
