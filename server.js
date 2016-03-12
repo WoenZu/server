@@ -18,6 +18,7 @@ initialize();
 
 var server = net.createServer(function(sock) {
   var chatClient = new tbox.Client(sock);
+  //TODO шифрование перед отправкой
   sock.write(protocol.motd(config.MOTD, 'utf8')); //TODO temp
   sock.setEncoding('utf8');
   sock.setTimeout(0);
@@ -104,6 +105,7 @@ function processCommand(msg) {
     case 'REGISTER': //TODO провека на состояние клиента pending, active or banned, make greeting of client to all users
       var nick = prm[0];
       if(!userDB.checkForUser(id)) {
+        //TODO как и везде шифруем перед отправкой и заворачиваем
         sendTo(id, protocol.registered('Hello ' + nick + '! You are registered on server, please wait activation. =)'));
       } else {
         sendTo(id, protocol.registered(nick + ' welcome to trollbox chat!'));
