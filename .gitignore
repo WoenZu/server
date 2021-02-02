@@ -1,0 +1,6 @@
+.idea/
+.gitignore
+TODO
+config.json
+userDB.json
+utils
